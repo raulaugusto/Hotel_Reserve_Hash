@@ -19,13 +19,15 @@ public class HashMapReservas
 
     private int FuncaoHash(string nomeHotel, int numeroQuarto)
     {
-        int hash = 0;
-        string chave = nomeHotel + numeroQuarto.ToString();
-        foreach (char c in chave)
+        int hash = (nomeHotel.GetHashCode() * 31 + numeroQuarto) % tamanho;
+        int indice = Math.Abs(hash);
+
+        while (tabela[indice].First != null && tabela[indice].First.Value.NomeHotel != nomeHotel)
         {
-            hash = (hash * 31 + c) % tamanho;
+            indice = (indice + 1) % tamanho;
         }
-        return hash;
+
+        return indice;
     }
 
     public bool Inserir(Reserva reserva)
@@ -63,16 +65,59 @@ public class HashMapReservas
     public bool Remover(string nomeHotel, int numeroQuarto, DateTime dataCheckIn)
     {
         int indice = FuncaoHash(nomeHotel, numeroQuarto);
-        var no = tabela[indice].First;
+        LinkedListNode<Reserva> no = tabela[indice].First;
+        Reserva reservaParaRemover = null;
+
         while (no != null)
         {
             if (no.Value.NomeHotel == nomeHotel && no.Value.NumeroQuarto == numeroQuarto && no.Value.DataCheckIn == dataCheckIn)
             {
+                reservaParaRemover = no.Value;
                 tabela[indice].Remove(no);
-                return true;
+                break;
             }
             no = no.Next;
         }
+
+        if (reservaParaRemover != null)
+        {
+            PromoverReservaMaisProxima(indice);
+            return true;
+        }
+
         return false;
     }
+
+
+    public void ExibirTabela()
+    {
+        for (int i = 0; i < tamanho; i++)
+        {
+            Console.WriteLine($"Índice {i}:");
+            foreach (var reserva in tabela[i])
+            {
+                Console.WriteLine($"  {reserva}");
+            }
+        }
+    }
+
+    private void PromoverReservaMaisProxima(int indice)
+    {
+        if (tabela[indice].Count > 0)
+        {
+            var reservasOrdenadas = new SortedList<DateTime, Reserva>();
+            foreach (var reserva in tabela[indice])
+            {
+                reservasOrdenadas.Add(reserva.DataCheckIn, reserva);
+            }
+
+            tabela[indice].Clear();
+            foreach (var reserva in reservasOrdenadas.Values)
+            {
+                tabela[indice].AddLast(reserva);
+            }
+        }
+    }
+
 }
+

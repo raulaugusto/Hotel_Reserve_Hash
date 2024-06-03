@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="txt\teste.txt">
+    <Resource Include="txt\reservas.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
